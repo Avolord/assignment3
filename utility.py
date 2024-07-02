@@ -214,6 +214,12 @@ def start_invariant_MSE(pred, label):
     
     return min_loss
 
+def interpolate_points(M1, M2, lambdas):
+    return [(1 - lam) * M1 + lam * M2 for lam in lambdas]
+
+def interpolate_latent(h1, h2, lambdas):
+    return [(1 - lam) * h1 + lam * h2 for lam in lambdas]
+
 if __name__ == "__main__":
     #Task III_b
     # Test with toy examples
@@ -237,8 +243,3 @@ if __name__ == "__main__":
     batch_loss = start_invariant_MSE(batch_pred, batch_label)
     print(f'Start-invariant MSE for batch: {batch_loss.item()}')
     
-def interpolate_points(M1, M2, lambdas):
-    return [(1 - lam) * M1 + lam * M2 for lam in lambdas]
-
-def interpolate_latent(h1, h2, lambdas):
-    return [(1 - lam) * h1 + lam * h2 for lam in lambdas]
