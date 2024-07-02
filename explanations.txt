@@ -1,0 +1,10 @@
+# Task 2:
+Explanation of Fold-Overs with Chamfer Distance
+Chamfer distance handles the mismatch of starting points by comparing points based on proximity rather than order. 
+However, since it does not enforce the sequential nature of polygons, it may lead to fold-overs where parts of the polygon overlap incorrectly. 
+This occurs because Chamfer distance minimizes the distance to the nearest point without considering the polygon's structural integrity, 
+leading to visually incorrect polygons.
+
+# Task 3 b:
+
+The comparison of the losses happens in the main of the utility.py (at the bottom)
