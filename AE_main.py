@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from IPython import display
 import math
-from utility import chamfer_distance, start_invariant_MSE, train
+from utility import chamfer_distance, interpolate_latent, interpolate_points, start_invariant_MSE, train
 # Import the IconDataset class
 from icon_dataset import IconDataset 
 import argparse 
@@ -68,15 +68,23 @@ def task_V():
     
     # Load trained model
     # Assuming the model has been trained and saved
-    checkpoint = torch.load('trained_model.pth')
-    net.load_state_dict(checkpoint['model_state_dict'])
+    checkpoint = torch.load('trained_model_iv.pth')
+    net.load_state_dict(checkpoint)
 
     data_iterator = iter(train_loader)
     batch_cpu = next(data_iterator)
     batch = dict_to_device(batch_cpu, device)
     
-    M1 = batch['polygon'][0].unsqueeze(0)
-    M2 = batch['polygon'][1].unsqueeze(0)
+    #select two random polygons
+    i1 = np.random.randint(0, batch['polygon'].shape[0])
+    i2 = np.random.randint(0, batch['polygon'].shape[0])
+    
+    #make sure they are different
+    while i1 == i2:
+        i2 = np.random.randint(0, batch['polygon'].shape[0])
+    
+    M1 = batch['polygon'][i1].unsqueeze(0)
+    M2 = batch['polygon'][i2].unsqueeze(0)
 
     lambdas = np.linspace(0, 1, 6)
 
@@ -91,6 +99,10 @@ def task_V():
         axes[0, i].set_xlim([-1, 1])
         axes[0, i].set_ylim([-1, 1])
         axes[0, i].set_aspect('equal')
+        
+        # zoom out a bit
+        axes[0, i].set_xlim([-2, 2])
+        axes[0, i].set_ylim([-2, 2])
 
     # Interpolation in latent space
     h1 = net.encode({'polygon': M1})  # Encoding M1
@@ -99,12 +111,15 @@ def task_V():
     interpolated_latents = interpolate_latent(h1, h2, lambdas)
     for i, lam in enumerate(lambdas):
         interpolated_latent = interpolated_latents[i]
-        reconstructed_point = net.decode(interpolated_latent).squeeze().cpu().detach().numpy()
+        reconstructed_point = net.decode(interpolated_latent)['polygon'].squeeze().cpu().detach().numpy()
         axes[1, i].plot(reconstructed_point[0, :], reconstructed_point[1, :], marker='o')
         axes[1, i].set_title(f'λ={lam:.1f}')
         axes[1, i].set_xlim([-1, 1])
         axes[1, i].set_ylim([-1, 1])
         axes[1, i].set_aspect('equal')
+        
+        axes[1, i].set_xlim([-2, 2])
+        axes[1, i].set_ylim([-2, 2])
 
     plt.tight_layout()
     plt.show()
